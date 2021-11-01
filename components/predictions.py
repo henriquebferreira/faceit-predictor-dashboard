@@ -20,7 +20,7 @@ def draw_predictions(st, db):
     # Recompute function only once per day
     @st.experimental_memo(ttl=24*3600)
     def load_features():
-        return list(features_coll.find({}).limit(5000))
+        return list(features_coll.find({}).limit(1000))
 
     # Match Predictions
     st.header("Match Predictions")
@@ -109,5 +109,55 @@ def draw_predictions(st, db):
                        nbins=50)
     style_chart(fig, chart_type='bar')
     st.plotly_chart(fig, use_container_width=True)
+
+    # Filter by match Id
+    match_id_input = st.text_input("Get Predictions by Match Id", "")
+    if match_id_input:
+        match_document = matches_coll.find_one({"_id": match_id_input})
+        match_predictions = match_document["predictions"]
+        bar_style = """
+            <style>
+                .predictor-weighted-bar {
+                    display: flex;
+                    text-align: center;
+                    height: 16px;
+                    font-size: 0px;
+                    text-decoration: none;
+                    color: white;
+                    font-size: 14px;
+                }
+
+                .predictor-weighted-teambar {
+                    line-height: 14px;
+                }
+                .predictor-background-lt {
+                    background-color: #404040;
+                }
+
+                .predictor-background-gt {
+                    background-color: #ff5500;
+                }
+            </style>"""
+        st.markdown(bar_style, unsafe_allow_html=True)
+        bar_html = ""
+        for map_name, probabilities in match_predictions.items():
+            bar_html += """
+            <img src="https://cdn.faceit.com/static/stats_assets/csgo/maps/110x55/csgo-votable-maps-de_MAP_NAME-110x55.jpg">
+            <div class="predictor-weighted-bar">
+                <div class="predictor-weighted-teambar predictor-background-gt" style="flex-basis: PROB_A%">
+                    PROB_A%
+                </div>
+                <div class="predictor-weighted-teambar predictor-background-lt" style="flex-basis: PROB_B%">
+                    PROB_B%
+                </div>
+            </div>
+            """
+            bar_html = bar_html.replace(
+                "PROB_A",  str(round((probabilities[0]*100), 1)))
+            bar_html = bar_html.replace(
+                "PROB_B",  str(round((probabilities[1]*100), 1)))
+            bar_html = bar_html.replace(
+                "MAP_NAME",  map_name)
+        st.markdown(bar_html, unsafe_allow_html=True)
 
     draw_horizontal_line(st)

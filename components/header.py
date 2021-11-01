@@ -16,6 +16,14 @@ def draw_header(st):
 
     stages_html = """
 <style>
+     .fp-stages-container {
+         display: flex;
+        flex-direction: column;
+        padding: 24px 0px 12px;
+        width: 75vw;
+        position: relative;
+        left: 50%;
+        transform: translate(-50%, 0%);}
      .fp-flex-container {
           display: flex;
           flex-direction: row;
@@ -67,7 +75,7 @@ def draw_header(st):
           margin-top: -12px;
      }
 </style>
-<div style="padding:24px 0px 12px 0px; width:1024px; position: relative; right: 25%">
+<div class="fp-stages-container">
     <div class="fp-flex-container">
         <div class="fp-flex-item">
             <img src="FACEIT_ICON_PLACEHOLDER" class="fp-item-logo">
