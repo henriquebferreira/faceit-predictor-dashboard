@@ -18,8 +18,10 @@
 # st.plotly_chart(subfig, use_container_width=True)
 import pandas as pd
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import plotly.express as px
 from utils.style import style_chart
+from utils.elements import draw_horizontal_line
 
 
 def draw_users(st, db):
@@ -123,3 +125,26 @@ def draw_users(st, db):
     )
     style_chart(fig, chart_type='line')
     st.plotly_chart(fig, use_container_width=True)
+
+    intervals = [{"months": 1}, {"days": 1}]
+    for i in intervals:
+        before_date = datetime.today() - relativedelta(**i)
+        before_timestamp = before_date.timestamp()
+
+        num_new_users = len(users[users.createdAt >= before_timestamp])
+
+        active_users = orders_coll.aggregate(
+            [
+                {"$match": {"timestamp": {"$gt": before_timestamp}}},
+                {"$group": {"_id": "$userId"}},
+                {"$group": {"_id": "", "count": {"$sum": 1}}},
+                {"$project": {"_id": 0}},
+            ])
+        num_active_users = list(active_users)[0]["count"]
+
+        interval_name = list(i.keys())[0][:-1]
+        col1, col2 = st.columns(2)
+        col1.metric(f"New users last {interval_name}", num_new_users)
+        col2.metric(f"Active users last {interval_name}", num_active_users)
+
+    draw_horizontal_line(st)

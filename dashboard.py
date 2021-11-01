@@ -1,15 +1,14 @@
 from plotly.subplots import make_subplots
 import streamlit as st
 import pandas as pd
-from db.config import read_config
 from utils.style import style_chart, primary_color, bg_color, secondary_bg_color, text_color
 from pymongo import MongoClient, DESCENDING
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
-from sections.header import draw_header
-from sections.users import draw_users
-from sections.predictions import draw_predictions
+from components.header import draw_header
+from components.users import draw_users
+from components.predictions import draw_predictions
 
 
 st.set_page_config(page_title="FACEIT Predictor Dashboard",

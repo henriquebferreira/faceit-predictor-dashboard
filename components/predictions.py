@@ -2,6 +2,8 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 from utils.style import style_chart
+from utils.elements import draw_horizontal_line
+import statistics
 
 
 def draw_predictions(st, db):
@@ -14,6 +16,11 @@ def draw_predictions(st, db):
     @st.experimental_memo(ttl=24*3600)
     def load_orders():
         return list(orders_coll.find({}))
+
+    # Recompute function only once per day
+    @st.experimental_memo(ttl=24*3600)
+    def load_features():
+        return list(features_coll.find({}).limit(5000))
 
     # Match Predictions
     st.header("Match Predictions")
@@ -49,7 +56,7 @@ def draw_predictions(st, db):
         data_frame=sorted_orders_by_timestamp,
         x='datetime',
         y="number_of_orders",
-        title='Number of total orders over time',
+        title='Number of total predictions over time',
         labels={
             "number_of_orders": "Number of Orders",
             "datetime": "Date"},
@@ -60,6 +67,7 @@ def draw_predictions(st, db):
     fig = px.histogram(sorted_orders_by_timestamp,
                        x="hour",
                        labels={"hour": "Hour"},
+                       title="Predictions distribution by Hour",
                        histnorm='probability density')
     style_chart(fig, chart_type='bar')
     st.plotly_chart(fig, use_container_width=True)
@@ -79,6 +87,27 @@ def draw_predictions(st, db):
                        x="day_of_week",
                        labels={"day_of_week": "Day of week"},
                        histnorm='probability density',
+                       title="Predictions distribution by Day of Week",
                        category_orders={"day_of_week": list(weekdays_map.values())})
     style_chart(fig, chart_type='bar')
     st.plotly_chart(fig, use_container_width=True)
+
+    features = load_features()
+    features_df = pd.DataFrame(features).drop("_id", axis=1)
+    features_df = pd.concat([
+        features_df.drop(['globals', 'maps'], axis=1),
+        features_df['globals'].apply(pd.Series),
+        features_df['maps'].apply(pd.Series)], axis=1)
+    features_df["match_mean_elo"] = features_df.mean_elo.apply(
+        lambda x: statistics.mean(x))
+
+    fig = px.histogram(features_df,
+                       x="match_mean_elo",
+                       histnorm='probability density',
+                       title="Predictions distribution by Match ELO",
+                       labels={"match_mean_elo": "Match Mean Elo"},
+                       nbins=50)
+    style_chart(fig, chart_type='bar')
+    st.plotly_chart(fig, use_container_width=True)
+
+    draw_horizontal_line(st)

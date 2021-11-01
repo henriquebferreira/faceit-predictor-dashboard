@@ -1,6 +1,8 @@
 from utils.style import primary_color
 from streamlit_lottie import st_lottie
 from utils.lottie import load_lottieurl
+from utils.elements import draw_horizontal_line
+import base64
 
 
 def draw_header(st):
@@ -11,9 +13,8 @@ def draw_header(st):
 
     st.markdown(f"<h1 style='color:{primary_color}; font-family: Play;'>FACEIT Predictor Dashboard</h1>",
                 unsafe_allow_html=True)
-    st.markdown("""<hr style="height:10px;border:none;color:#333;background-color:#333;" /> """,
-                unsafe_allow_html=True)
-    st.markdown("""
+
+    stages_html = """
 <style>
      .fp-flex-container {
           display: flex;
@@ -26,7 +27,7 @@ def draw_header(st):
           display:flex;
           flex-direction: column;
           flex: 1 1 0px;
-          padding:16px;
+          padding: 8px;
           border: solid 4px transparent;
           border-radius: 4px;}
      .fp-selected-item {
@@ -34,7 +35,7 @@ def draw_header(st):
      }
      .fp-item-logo {
           height:64px;
-          margin: 16px auto;
+          margin: 4px auto;
      }
      .fp-item-title {
           color: #ff5500;
@@ -66,34 +67,50 @@ def draw_header(st):
           margin-top: -12px;
      }
 </style>
-<div style="padding:24px 0px 12px 0px">
+<div style="padding:24px 0px 12px 0px; width:1024px; position: relative; right: 25%">
     <div class="fp-flex-container">
         <div class="fp-flex-item">
-            <img src="faceit_icon.png" class="fp-item-logo">
+            <img src="FACEIT_ICON_PLACEHOLDER" class="fp-item-logo">
             <span class="fp-item-title">Ingestor</span>
             <span class="fp-item-description">Create a dataset of matches and players from the official FACEIT API.</span>
         </div>
-        <div class="fp-flex-item fp-selected-item">
-            <img src="machine_learning_icon.png" class="fp-item-logo">
+        <div class="fp-flex-item">
+            <img src="MACHINE_LEARNING_ICON_PLACEHOLDER" class="fp-item-logo">
             <span class="fp-item-title">Machine Learning</span>
             <span class="fp-item-description">Data Science workflow: process the data and create a model.</span>
         </div>
         <div class="fp-flex-item">
-            <img src="api_icon.png" class="fp-item-logo">
+            <img src="API_ICON_PLACEHOLDER" class="fp-item-logo">
             <span class="fp-item-title">Predictor API</span>
             <span class="fp-item-description">Implement the extension backend logic and database.</span>
         </div>
         <div class="fp-flex-item">
-            <img src="browser_extension_icon.png" class="fp-item-logo">
-            <span class="fp-item-title">Browser Extension</span>
+            <img src="BROWSER_EXTENSION_ICON_PLACEHOLDER" class="fp-item-logo">
+            <span class="fp-item-title">Extension</span>
             <span class="fp-item-description">Retrieves data to perform live predictions and contains frontend code.</span>
         </div>
-        <div class="fp-flex-item">
-            <img src="streamlit_icon.png" class="fp-item-logo">
+        <div class="fp-flex-item fp-selected-item">
+            <img src="STREAMLIT_ICON_PLACEHOLDER" class="fp-item-logo">
             <span class="fp-item-title">Dashboard</span>
             <span class="fp-item-description">Streamlit app to monitor extension data.</span>
         </div>
     </div>
     <div class="arrow_box"></div>
 </div>
-""", unsafe_allow_html=True)
+"""
+    stages_icons = {
+        "FACEIT_ICON_PLACEHOLDER": "faceit_icon.png",
+        "MACHINE_LEARNING_ICON_PLACEHOLDER": "machine_learning_icon.png",
+        "API_ICON_PLACEHOLDER": "api_icon.png",
+        "BROWSER_EXTENSION_ICON_PLACEHOLDER": "browser_extension_icon.png",
+        "STREAMLIT_ICON_PLACEHOLDER": "streamlit_icon.png",
+    }
+
+    for placeholder, image_path in stages_icons.items():
+        with open(image_path, "rb") as f:
+            data_url = base64.b64encode(f.read()).decode("utf-8")
+            stages_html = stages_html.replace(
+                placeholder, f"data:image;base64,{data_url}")
+    st.markdown(stages_html, unsafe_allow_html=True)
+
+    draw_horizontal_line(st)
