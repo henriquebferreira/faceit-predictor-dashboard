@@ -19,3 +19,9 @@ def style_chart(fig, chart_type):
     elif chart_type == 'line':
         fig.update_xaxes(gridcolor=bg_color, gridwidth=4, showline=False)
         fig.update_traces(line_color=primary_color)
+    fig.update_layout(
+        margin=dict(l=20, r=20, t=60, b=40)
+    )
+
+def add_custom_style(st):
+    st.markdown('<style>' + open('utils/style.css').read() + '</style>', unsafe_allow_html=True)

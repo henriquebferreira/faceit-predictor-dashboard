@@ -15,66 +15,6 @@ def draw_header(st):
                 unsafe_allow_html=True)
 
     stages_html = """
-<style>
-     .fp-stages-container {
-         display: flex;
-        flex-direction: column;
-        padding: 24px 0px 12px;
-        width: 75vw;
-        position: relative;
-        left: 50%;
-        transform: translate(-50%, 0%);}
-     .fp-flex-container {
-          display: flex;
-          flex-direction: row;
-          justify-content: space-evenly;
-          flex-wrap:nowrap;
-          width: 100%;
-          font-family: 'Play';}
-     .fp-flex-item {
-          display:flex;
-          flex-direction: column;
-          flex: 1 1 0px;
-          padding: 8px;
-          border: solid 4px transparent;
-          border-radius: 4px;}
-     .fp-selected-item {
-          border-color: #fe6300;
-     }
-     .fp-item-logo {
-          height:64px;
-          margin: 4px auto;
-     }
-     .fp-item-title {
-          color: #ff5500;
-          font-size: 18px;
-          font-weight: bold;
-          text-align: center;
-          padding-bottom: 8px;
-     }
-     .fp-item-description {
-          color: white;
-          font-size: 14px;
-     }
-     .arrow_box {
-          height:4px;
-          margin:18px 32px;
-          position: relative;
-          background:linear-gradient(90deg, gray 20%, #ff5500 80%);}
-     .arrow_box:before {
-          left: 100%;
-          top: 50%;
-          border: solid transparent;
-          content: "";
-          position: absolute;
-          pointer-events: none;
-     }
-     .arrow_box:before {
-          border-left-color: #ff5500;
-          border-width: 12px;
-          margin-top: -12px;
-     }
-</style>
 <div class="fp-stages-container">
     <div class="fp-flex-container">
         <div class="fp-flex-item">
@@ -120,5 +60,6 @@ def draw_header(st):
             stages_html = stages_html.replace(
                 placeholder, f"data:image;base64,{data_url}")
     st.markdown(stages_html, unsafe_allow_html=True)
+    
 
     draw_horizontal_line(st)

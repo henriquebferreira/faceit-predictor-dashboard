@@ -1,7 +1,7 @@
 from plotly.subplots import make_subplots
 import streamlit as st
 import pandas as pd
-from utils.style import style_chart, primary_color, bg_color, secondary_bg_color, text_color
+from utils.style import style_chart, primary_color, bg_color, secondary_bg_color, text_color, add_custom_style
 from pymongo import MongoClient, DESCENDING
 import plotly.express as px
 import plotly.graph_objects as go
@@ -36,7 +36,7 @@ features_coll = db.features
 orders_coll = db.orders
 users_coll = db.users
 
-
+add_custom_style(st)
 draw_header(st)
 draw_users(st, db)
 draw_predictions(st, db)
