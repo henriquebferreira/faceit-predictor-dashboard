@@ -35,11 +35,11 @@ def get_predictor_stages():
         </div>"""
 
     stages_icons = {
-        "FACEIT_ICON_PLACEHOLDER": "resources/faceit_icon.png",
-        "MACHINE_LEARNING_ICON_PLACEHOLDER": "resources/predictor_icon.png",
-        "API_ICON_PLACEHOLDER": "resources/api_icon.png",
-        "BROWSER_EXTENSION_ICON_PLACEHOLDER": "resources/browser_extension_icon.png",
-        "STREAMLIT_ICON_PLACEHOLDER": "resources/streamlit_icon.png",
+        "FACEIT_ICON_PLACEHOLDER": "src/resources/faceit_icon.png",
+        "MACHINE_LEARNING_ICON_PLACEHOLDER": "src/resources/predictor_icon.png",
+        "API_ICON_PLACEHOLDER": "src/resources/api_icon.png",
+        "BROWSER_EXTENSION_ICON_PLACEHOLDER": "src/resources/browser_extension_icon.png",
+        "STREAMLIT_ICON_PLACEHOLDER": "src/resources/streamlit_icon.png",
     }
 
     for placeholder, image_path in stages_icons.items():

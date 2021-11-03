@@ -1,17 +1,19 @@
-from utils.db import get_mongo_db
+from db.client import get_mongo_db
+from components.horizontal_line import draw_horizontal_line
 import streamlit as st
 
 
 class Section:
-    def __init__(self, title, is_header=False):
+    def __init__(self, name, is_title=False):
         self.db = get_mongo_db()
-        self.title = title
+        self.name = name
         self.st = st
-        self.is_header = is_header
+        self.is_title = is_title
 
     def core_draw(self):
         pass
 
     def draw(self):
-        st.title(self.title) if self.is_header else st.header(self.title)
+        st.title(self.name) if self.is_title else st.header(self.name)
         self.core_draw()
+        draw_horizontal_line()

@@ -2,13 +2,13 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 import numpy as np
-from utils.style import style_chart
-from components.horizontal_line import draw_horizontal_line
+from utils import style_chart, weekdays_map
 from components.prediction_bar import get_prediction_bar
 import statistics
 import joblib
 from sections.base_section import Section
 import streamlit as st
+from db.loaders import load_orders
 
 
 class PredictionsSection(Section):
@@ -16,39 +16,6 @@ class PredictionsSection(Section):
         super(PredictionsSection, self).__init__("Match Predictions")
 
     def core_draw(self):
-
-        weekdays_map = {
-            0: "Monday",
-            1: "Tuesday",
-            2: "Wednesday",
-            3: "Thursday",
-            4: "Friday",
-            5: "Saturday",
-            6: "Sunday",
-        }
-
-        # Recompute function only once per day
-        @st.experimental_memo(ttl=24*3600)
-        def load_orders(query_filter):
-            orders = pd.DataFrame(self.db.orders.find(query_filter))
-            orders = orders[orders.type == 'MATCH_PREDICT']
-
-            orders = orders.sort_values(by="timestamp")
-
-            orders["datetime"] = orders.timestamp.apply(
-                lambda x: datetime.fromtimestamp(x))
-            orders["hour"] = orders.datetime.apply(lambda x: x.hour)
-
-            orders["day_of_week"] = orders.datetime.apply(
-                lambda x: x.weekday())
-            orders.day_of_week = orders.day_of_week.map(weekdays_map)
-
-            orders["number_of_orders"] = range(1, len(orders)+1)
-            orders = orders.drop(
-                columns=["_id", "matchId", "type", "coinsBalance", "timestamp"], axis=1)
-
-            return orders
-
         # Filter by user
         user_input = st.text_input("Filter by User (Ex: rapxim)", "")
 
@@ -86,7 +53,7 @@ class PredictionsSection(Section):
                            labels={"day_of_week": "Day of week"},
                            histnorm='probability density',
                            title="Predictions distribution by Day of Week",
-                           category_orders={"day_of_week": list(weekdays_map.values())})
+                           category_orders={"day_of_week": list(weekdays_map().values())})
         style_chart(fig, chart_type='bar')
         col2.plotly_chart(fig, use_container_width=True)
 
@@ -147,11 +114,11 @@ class PredictionsSection(Section):
             dif_mean_matches_on_day = c3.slider(
                 'Diff Mean Matches on Day', -5.0, 5.0, 0.0)
 
-            submit_button = c1.form_submit_button(label='Get Predictdion')
+            submit_button = c1.form_submit_button(label='Get Prediction')
 
         # create new prediction: set features values individually
         if submit_button:
-            match_predictor = joblib.load('resources/ml_model.pkl')
+            match_predictor = joblib.load('src/resources/ml_model.pkl')
 
             sample_features = np.zeros(42)
             sample_features[0] = dif_mean_elo
