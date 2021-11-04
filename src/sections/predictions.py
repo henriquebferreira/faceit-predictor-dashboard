@@ -96,8 +96,17 @@ class PredictionsSection(Section):
                 st.error(
                     f'No predictions in database for match {match_id_input}')
 
+        trained_models = {
+            "AdaBoost": 'adaboost',
+            "Gradient Boosting": "gbc",
+            "Linear Discriminant Analysis": "lda",
+            "Logistic Regression": "lr",
+            "Random Forest": "rf",
+            "XGBoost": "xgb",
+        }
         with st.form(key='prediction_form'):
             st.subheader("Feature Values")
+            model = st.selectbox('Select Model', list(trained_models.keys()))
             c1, c2, c3 = st.columns(3)
 
             dif_mean_elo = c1.slider('Diff Mean ELO', -500.0, 500.0, 0.0)
@@ -111,29 +120,31 @@ class PredictionsSection(Section):
 
             dif_mean_rating_prev = c3.slider(
                 'Diff Mean Rating Recent', -2.0, 2.0, 0.0)
-            dif_mean_matches_on_day = c3.slider(
-                'Diff Mean Matches on Day', -5.0, 5.0, 0.0)
+            mean_match_elo = c3.slider(
+                'Mean Match Elo', 500.0, 3000.0, 2000.0)
 
             submit_button = c1.form_submit_button(label='Get Prediction')
 
         # create new prediction: set features values individually
         if submit_button:
-            match_predictor = joblib.load('src/resources/ml_model.pkl')
+            match_predictor = joblib.load(
+                f'src/resources/models/{trained_models[model]}.joblib')
+            sc = joblib.load('src/resources/models/scaler.bin')
 
-            sample_features = np.zeros(42)
-            sample_features[0] = dif_mean_elo
-            sample_features[5] = dif_mean_matches
-            sample_features[10] = dif_mean_matches_on_map
-            sample_features[12] = dif_mean_kd_on_map
-            sample_features[26] = dif_mean_rating_prev
-            sample_features[38] = dif_mean_matches_on_day
+            sample_features = np.zeros(47)
+            sample_features[0] = mean_match_elo
+            sample_features[1] = 1
+            sample_features[2] = 0
+            sample_features[3] = dif_mean_elo
+            sample_features[8] = dif_mean_matches
+            sample_features[13] = dif_mean_matches_on_map
+            sample_features[15] = dif_mean_kd_on_map
+            sample_features[31] = dif_mean_rating_prev
+            sample_features[45] = 0
+            sample_features[46] = 1
+            scaled_features = sc.transform([sample_features])
+            probs = match_predictor.predict_proba(scaled_features)[0]
+            probs = [str(round(p*100, 1)) for p in probs]
 
-            simulated_probabilities = match_predictor.predict_proba([sample_features])[
-                0]
-            simulated_probabilities = [
-                str(round(p*100, 1)) for p in simulated_probabilities]
-
-            simulated_bar_html = get_prediction_bar(
-                "Map Name", simulated_probabilities[0], simulated_probabilities[1])
-
+            simulated_bar_html = get_prediction_bar(model, probs[0], probs[1])
             st.markdown(simulated_bar_html, unsafe_allow_html=True)

@@ -11,7 +11,7 @@ class TitleSection(Section):
 
     def core_draw(self):
         # Original Lottie by https://lottiefiles.com/67736-big-data-analysis
-        st_lottie(load_lottie('lf20_sevxjflh'), height=200)
+        # st_lottie(load_lottie('lf20_sevxjflh'), height=200)
 
         stages_html = get_predictor_stages()
         self.st.markdown(stages_html, unsafe_allow_html=True)
