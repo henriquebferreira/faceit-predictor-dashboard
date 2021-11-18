@@ -3,7 +3,7 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 import streamlit as st
 from datetime import datetime
-from utils import timestamp_to_dt, get_country_alpha_3
+from utils import timestamp_to_dt, get_country_alpha_3, object_id_to_dt
 import pymongo
 from utils import weekdays_map
 
@@ -11,15 +11,15 @@ from utils import weekdays_map
 @st.experimental_memo(ttl=3600)
 def load_users():
     db = get_mongo_db()
-    users = pd.DataFrame(db.users.find({}).sort(
-        "createdAt", pymongo.ASCENDING))
-    users["createdAtDt"] = users.createdAt.apply(timestamp_to_dt)
+    users = pd.DataFrame(db.users.find({}))
+    users["createdAtDt"] = users._id.apply(object_id_to_dt)
+    users = users.sort_values(by="createdAtDt", ascending=True)
     users["number_of_users"] = range(1, len(users)+1)
     users = users.drop(columns=["_id", "faceitId", "email"])
     return users
 
 
-@st.experimental_memo(ttl=3600)
+@ st.experimental_memo(ttl=3600)
 def get_most_active_users(limit):
     db = get_mongo_db()
     most_active_users_cursor = db.orders.aggregate(
@@ -54,7 +54,7 @@ def get_most_active_users(limit):
     return pd.DataFrame(most_active_users_cursor)
 
 
-@st.cache
+@ st.cache
 def load_weekly_users():
     weekly_users = pd.read_csv(
         "src/resources/weekly_users.csv", skiprows=1)
@@ -67,7 +67,7 @@ def load_weekly_users():
     return weekly_users
 
 
-@st.experimental_memo(ttl=3600)
+@ st.experimental_memo(ttl=3600)
 def get_users_metrics(min_interval, max_interval):
     db = get_mongo_db()
     now = datetime.today()
@@ -89,14 +89,14 @@ def get_users_metrics(min_interval, max_interval):
     return {"new_users": num_new_users, "active_users": num_active_users}
 
 
-@st.experimental_memo(ttl=24*3600)
+@ st.experimental_memo(ttl=24*3600)
 def load_orders(query_filter):
     db = get_mongo_db()
-    orders = pd.DataFrame(db.orders.find(query_filter).sort(
-        "timestamp", pymongo.ASCENDING))
+    orders = pd.DataFrame(db.orders.find(query_filter))
     orders = orders[orders.type == 'MATCH_PREDICT']
 
-    orders["datetime"] = orders.timestamp.apply(timestamp_to_dt)
+    orders["datetime"] = orders._id.apply(object_id_to_dt)
+    orders = orders.sort_values(by="datetime", ascending=True)
     orders["hour"] = orders.datetime.apply(lambda x: x.hour)
 
     orders["day_of_week"] = orders.datetime.apply(

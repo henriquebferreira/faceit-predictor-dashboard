@@ -38,6 +38,10 @@ def timestamp_to_dt(ts):
     return datetime.fromtimestamp(ts)
 
 
+def object_id_to_dt(obj_id):
+    return obj_id.generation_time
+
+
 def pct_change(new_val, old_val):
     return 100*(new_val-old_val)/old_val
 
