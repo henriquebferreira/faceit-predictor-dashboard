@@ -3,9 +3,8 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 import streamlit as st
 from datetime import datetime
-from utils import timestamp_to_dt, get_country_alpha_3, object_id_to_dt
-import pymongo
-from utils import weekdays_map
+from utils import get_country_alpha_3, object_id_to_dt, weekdays_map
+from bson.objectid import ObjectId
 
 
 @st.experimental_memo(ttl=3600)
@@ -19,7 +18,7 @@ def load_users():
     return users
 
 
-@ st.experimental_memo(ttl=3600)
+@st.experimental_memo(ttl=3600)
 def get_most_active_users(limit):
     db = get_mongo_db()
     most_active_users_cursor = db.orders.aggregate(
@@ -54,7 +53,7 @@ def get_most_active_users(limit):
     return pd.DataFrame(most_active_users_cursor)
 
 
-@ st.cache
+@st.cache
 def load_weekly_users():
     weekly_users = pd.read_csv(
         "src/resources/weekly_users.csv", skiprows=1)
@@ -67,19 +66,20 @@ def load_weekly_users():
     return weekly_users
 
 
-@ st.experimental_memo(ttl=3600)
+@st.experimental_memo(ttl=3600)
 def get_users_metrics(min_interval, max_interval):
     db = get_mongo_db()
     now = datetime.today()
-    min_ts = (now - relativedelta(**min_interval)).timestamp()
-    max_ts = (now - relativedelta(**max_interval)).timestamp()
+    min_ts = (now - relativedelta(**min_interval))
+    max_ts = (now - relativedelta(**max_interval))
 
+    min_object_id = ObjectId.from_datetime(min_ts)
+    max_object_id = ObjectId.from_datetime(max_ts)
     num_new_users = db.users.find(
-        {"createdAt": {"$gte": min_ts, "$lt": max_ts}}).count()
-
+        {"_id": {"$gte": min_object_id, "$lt": max_object_id}}).count()
     active_users = db.orders.aggregate(
         [
-            {"$match": {"timestamp": {"$gte": min_ts, "$lt": max_ts}}},
+            {"$match": {"_id": {"$gte": min_object_id, "$lt": max_object_id}}},
             {"$group": {"_id": "$userId"}},
             {"$group": {"_id": "", "count": {"$sum": 1}}},
             {"$project": {"_id": 0}},
@@ -89,7 +89,7 @@ def get_users_metrics(min_interval, max_interval):
     return {"new_users": num_new_users, "active_users": num_active_users}
 
 
-@ st.experimental_memo(ttl=24*3600)
+@st.experimental_memo(ttl=24*3600)
 def load_orders(query_filter):
     db = get_mongo_db()
     orders = pd.DataFrame(db.orders.find(query_filter))
